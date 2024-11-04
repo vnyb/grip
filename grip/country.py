@@ -20,5 +20,7 @@ def load_translation(language: str | None = None, languages: List[str] = []) -> 
         'iso3166-1',
         pycountry.LOCALES_DIR,
         languages=languages,
+        fallback=True,
     )
+    translation.install()
     return translation
