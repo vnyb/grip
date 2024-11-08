@@ -1,3 +1,4 @@
+import datetime
 import json
 import logging
 import os
@@ -23,6 +24,16 @@ def require_env(name: str) -> str:
         return os.environ[name]
     except KeyError:
         die(f"environment variable '{name}' is not set")
+
+def get_file_age(path: str) -> datetime.timedelta:
+    timestamp = os.path.getctime(path)
+    creation_date = datetime.datetime.fromtimestamp(timestamp)
+    return datetime.datetime.now() - creation_date
+
+def get_file_staleness(path: str) -> datetime.timedelta:
+    timestamp = os.path.getmtime(path)
+    last_modified_date = datetime.datetime.fromtimestamp(timestamp)
+    return datetime.datetime.now() - last_modified_date
 
 def read_file(path: str) -> str:
     with open(path, 'r') as file:
