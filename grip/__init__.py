@@ -66,3 +66,9 @@ def yaml_str_representer(dumper, data):
     return dumper.represent_scalar('tag:yaml.org,2002:str', data)
 
 yaml.add_representer(str, yaml_str_representer)
+
+def now() -> datetime.datetime:
+    return datetime.datetime.now().astimezone()
+
+def date_to_str(dt: datetime.datetime) -> str:
+    return dt.strftime("%Y-%m-%d")
