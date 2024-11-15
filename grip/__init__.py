@@ -113,3 +113,19 @@ def parse_iso_datetime(string: str) -> datetime.datetime:
     if len(string) == 7:
         string = string + "-01"
     return dateutil.parser.isoparse(string).astimezone()
+
+def deep_dict_equal(a: dict, b: dict) -> bool:
+    for key in a.keys():
+        if key not in b:
+            return False
+        if isinstance(a[key], dict) and isinstance(b[key], dict):
+            if not deep_dict_equal(a[key], b[key]):
+                return False
+        if a[key] != b[key]:
+            return False
+
+    for key in b.keys():
+        if key not in a:
+            return False
+
+    return True
