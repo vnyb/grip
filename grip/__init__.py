@@ -1,4 +1,5 @@
 import datetime
+import io
 import dateutil.parser
 import json
 import logging
@@ -43,6 +44,35 @@ def read_file(path: str) -> str:
 def write_file(data, path: str):
     with open(path, 'w') as file:
         return file.write(data)
+
+def read_last_line(fp: io.BufferedReader, ignore_empty_lines=False) -> str | None:
+    fp.seek(0, 2)  # Move to the end of the file
+    pos = start = end = fp.tell()
+
+    def read() -> bytes | None:
+        nonlocal pos
+
+        pos -= 1
+        fp.seek(pos)
+        return fp.read(1)
+
+    while pos > 0:
+        char = read()
+
+        if char == b'\n':
+            if end - start == 0 and ignore_empty_lines:
+                end = start = pos
+                continue
+            break
+        else:
+            start = pos
+
+    n = end - start
+    if n <= 0:
+        return None if ignore_empty_lines else ""
+
+    fp.seek(start)
+    return fp.read(n).decode()
 
 def read_json(path: str):
     with open(path, 'r') as file:
