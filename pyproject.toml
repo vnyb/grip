@@ -18,7 +18,14 @@ classifiers = [
   "Operating System :: OS Independent",
 ]
 
-dependencies = ["pyyaml", "python-dateutil", "pycountry", "python-slugify"]
+dependencies = [
+  "email-validator",
+  "imap-tools",
+  "pyyaml",
+  "python-dateutil",
+  "pycountry",
+  "python-slugify",
+]
 
 [project.scripts]
 
