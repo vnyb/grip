@@ -7,25 +7,44 @@ import os
 import sys
 import yaml
 
-from typing import NoReturn
+from typing import Callable, NoReturn, Tuple, TypeVar
+from slugify import slugify
+
+T = TypeVar("T")
+R = TypeVar("R")
+
 
 def remove_suffix(string: str, suffix: str) -> str:
     if string.endswith(suffix):
-        return string[:-len(suffix)]
+        return string[: -len(suffix)]
     return string
+
 
 def die(message: str) -> NoReturn:
     logging.error(message)
     sys.exit(1)
 
+
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
+
 
 def require_env(name: str) -> str:
     try:
         return os.environ[name]
     except KeyError:
         die(f"environment variable '{name}' is not set")
+
+
+def is_valid_slug(slug: str) -> bool:
+    return slugify(slug) == slug
+
+
+def check_slug(slug: str) -> str:
+    if not is_valid_slug(slug):
+        raise ValueError("invalid slug")
+    return slug
+
 
 def get_file_age(path: str) -> datetime.timedelta:
     timestamp = os.path.getctime(path)
