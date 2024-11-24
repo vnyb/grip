@@ -133,7 +133,7 @@ def read_toml(path: str) -> dict:
         return tomllib.load(file)
 
 
-def now() -> datetime.datetime:
+def now_tz() -> datetime.datetime:
     return datetime.datetime.now().astimezone()
 
 
