@@ -182,3 +182,41 @@ def all_equal(values) -> bool:
 
 def apply_or_none(func: Callable[[T], R], value: T | None) -> R | None:
     return None if value is None else func(value)
+
+
+class TCPAddress:
+    def __init__(self, host: str, port: int | None = None):
+        self.host, self.port = self.parse(host, port)
+
+    def __str__(self):
+        if ":" in self.host:
+            return f"[{self.host}]:{self.port}"
+        return f"{self.host}:{self.port}"
+
+    @staticmethod
+    def parse(addr: str, port: int | None = None) -> Tuple[str, int]:
+        def default():
+            if port is None:
+                raise ValueError("no port specified")
+            return port
+
+        segments = addr.split(":")
+        if len(segments) == 1:
+            # TODO check IPv4 format
+            if port is None:
+                return addr, default()
+            return addr, port
+
+        if len(segments) == 2:
+            # TODO check IPv4 format
+            return segments[0], int(segments[1])
+
+        # TODO check IPv6 format
+        if not addr.startswith("["):
+            return addr, default()
+        if addr.endswith("]"):
+            return addr[1:-1], default()
+        if not segments[-2].endswith("]"):
+            raise ValueError
+        host, _port = addr.rsplit(":", 1)
+        return host[1:-1], int(_port)
