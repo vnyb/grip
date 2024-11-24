@@ -13,11 +13,14 @@ class Loggable:
         assert self._log
         return self._log
 
+    def sublogger(self, name: str) -> logging.Logger:
+        return logging.getLogger(f"{self.log.name}.{name}")
+
     @staticmethod
     def sublog(name: str):
         def decorator(func):
             def wrapper(self, *args, **kwargs):
-                self._log = logging.getLogger(f"{self._base_log}.{name}")
+                self._log = logging.getLogger(f"{self._base_log.name}.{name}")
                 try:
                     result = func(self, *args, **kwargs)
                 finally:

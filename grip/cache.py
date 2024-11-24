@@ -23,7 +23,7 @@ class SimpleFileCache(Loggable):
         self.setup_logger(name)
 
         if self.format not in self.SUPPORTED_FORMATS:
-            raise ValueError("unknown format")
+            raise ValueError(f"unknown format: {self.format}")
 
     def check_validity(self, max_age: datetime.timedelta | None = None) -> bool:
         try:
@@ -47,7 +47,7 @@ class SimpleFileCache(Loggable):
             max_age: datetime.timedelta | None = None,
             **kwargs,
         ) -> T | None:
-            if not self.check(max_age=max_age):
+            if not self.check_validity(max_age=max_age):
                 return None
             return func(self, *args, **kwargs)
 
