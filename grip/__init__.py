@@ -168,3 +168,17 @@ def deep_dict_equal(a: dict, b: dict) -> bool:
             return False
 
     return True
+
+
+def all_equal(values) -> bool:
+    assert len(values) > 0
+    value = values[0]
+
+    for i in values:
+        if i != value:
+            return False
+    return True
+
+
+def apply_or_none(func: Callable[[T], R], value: T | None) -> R | None:
+    return None if value is None else func(value)

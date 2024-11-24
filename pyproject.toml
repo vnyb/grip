@@ -6,32 +6,22 @@ build-backend = "setuptools.build_meta"
 name = "grip"
 version = "0.1.0"
 description = "General Resources & Implementations for Python"
-authors = [
-    {name = "Vianney Bajart", email = "vianney.bajart@protonmail.com"}
-]
-license = {text = "MIT"}
+authors = [{ name = "Vianney Bajart", email = "vianney.bajart@protonmail.com" }]
+license = { text = "MIT" }
 readme = "README.md"
 requires-python = ">=3.12"
 keywords = ["utilities", "helpers", "python-tools", "development"]
 
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
 ]
 
-dependencies = [
-  "pycountry",
-]
+dependencies = ["pyyaml", "python-dateutil", "pycountry", "python-slugify"]
 
 [project.scripts]
 
 
-
 [project.optional-dependencies]
-dev = [
-  "pytest",
-  "black",
-  "mypy",
-]
-
+dev = ["pytest", "black", "mypy"]
