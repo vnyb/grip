@@ -2,6 +2,7 @@
 SMTP e-mail sender
 """
 
+from os import walk
 import smtplib
 import ssl
 
@@ -9,6 +10,9 @@ from contextlib import contextmanager
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.message import EmailMessage
+from typing import Self
+
+from grip.email.config import SMTPConfig
 
 from .common import (
     EmailSender,
@@ -66,13 +70,13 @@ class SMTPEmailSender(EmailSender):
 
     def __init__(
         self,
-        host,
-        port,
-        user,
-        password,
-        sender,
-        starttls=False,
-        timeout=30,
+        host: str,
+        port: int,
+        user: str,
+        password: str,
+        sender: str,
+        starttls: bool = False,
+        timeout: int = 30,
     ):
         super().__init__(sender)
 
@@ -82,6 +86,19 @@ class SMTPEmailSender(EmailSender):
         self.password = password
         self.starttls = starttls
         self.timeout = timeout
+
+    @classmethod
+    def from_config(cls, config: SMTPConfig) -> Self:
+        assert config.sender
+        return cls(
+            host=config.host,
+            port=config.port,
+            user=config.user,
+            password=config.password.get_secret_value(),
+            sender=config.sender,
+            starttls=config.starttls,
+            timeout=config.timeout,
+        )
 
     @contextmanager
     def connect(self):

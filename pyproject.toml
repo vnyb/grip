@@ -21,10 +21,11 @@ classifiers = [
 dependencies = [
   "email-validator",
   "imap-tools",
-  "pyyaml",
-  "python-dateutil",
   "pycountry",
+  "pydantic",
+  "python-dateutil",
   "python-slugify",
+  "pyyaml",
 ]
 
 [project.scripts]
