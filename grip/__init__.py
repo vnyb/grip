@@ -9,6 +9,8 @@ import tomllib
 import yaml
 
 from functools import lru_cache
+from typing import Callable, NoReturn, Tuple, TypeVar
+from pydantic_core import CoreSchema, core_schema
 from slugify import slugify
 from typing import Callable, NoReturn, Tuple, TypeVar
 
@@ -222,19 +224,17 @@ class TCPAddress:
             return f"[{self.host}]:{self.port}"
         return f"{self.host}:{self.port}"
 
-    @staticmethod
-    def parse(addr: str, port: int | None = None) -> Tuple[str, int]:
+    @classmethod
+    def parse(cls, addr: str, port: int | None = None) -> Tuple[str, int]:
         def default():
             if port is None:
-                raise ValueError("no port specified")
+                raise ValueError("No port specified")
             return port
 
         segments = addr.split(":")
         if len(segments) == 1:
             # TODO check IPv4 format
-            if port is None:
-                return addr, default()
-            return addr, port
+            return addr, default()
 
         if len(segments) == 2:
             # TODO check IPv4 format
@@ -246,6 +246,41 @@ class TCPAddress:
         if addr.endswith("]"):
             return addr[1:-1], default()
         if not segments[-2].endswith("]"):
-            raise ValueError
+            raise ValueError("Invalid host")
         host, _port = addr.rsplit(":", 1)
-        return host[1:-1], int(_port)
+        return host[1:-1], cls.validate_port(_port)
+
+    @staticmethod
+    def validate_port(value) -> int:
+        try:
+            port = int(value)
+        except ValueError as exc:
+            raise ValueError("Port must be an integer") from exc
+
+        if not (0 <= port <= 65535):
+            raise ValueError("Port must be in [0-65535]")
+
+        return port
+
+    @classmethod
+    def validate(cls, value):
+        if isinstance(value, dict):
+            host = value.get("host")
+            if host is None:
+                raise ValueError("No host specified")
+            port = value.get("port")
+            if port is None:
+                raise ValueError("No port specified")
+            port = cls.validate_port(port)
+            return cls(host, port)
+
+        if isinstance(value, str):
+            host, port = cls.parse(value)
+            return cls(host, port)
+
+    @classmethod
+    def __get_pydantic_core_schema__(cls, source, handler):
+        """
+        Define the Pydantic core schema for validation.
+        """
+        return core_schema.no_info_plain_validator_function(cls.validate)
