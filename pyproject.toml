@@ -25,6 +25,7 @@ dependencies = [
   "pydantic",
   "python-dateutil",
   "python-slugify",
+  "pytimeparse",
   "pyyaml",
 ]
 
@@ -32,7 +33,7 @@ dependencies = [
 
 
 [project.optional-dependencies]
-dev = ["pytest", "black", "mypy"]
+dev = ["pytest", "black", "mypy", "ipython"]
 
 [tool.setuptools.package-data]
 "*" = ["py.typed"]
