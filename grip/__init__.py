@@ -1,5 +1,4 @@
 import datetime
-import dateutil.parser
 import io
 import json
 import logging
@@ -10,7 +9,7 @@ import yaml
 
 from functools import lru_cache
 from typing import Callable, NoReturn, Tuple, TypeVar
-from pydantic_core import CoreSchema, core_schema
+from pydantic_core import core_schema
 from slugify import slugify
 from typing import Callable, NoReturn, Tuple, TypeVar
 
@@ -137,7 +136,7 @@ def read_json(path: str):
 
 def write_json(data, path: str, indent=True):
     with open(path, "w") as file:
-        return json.dump(data, file, indent=indent)
+        json.dump(data, file, indent=indent)
 
 
 def read_yaml(path: str):
@@ -162,26 +161,6 @@ yaml.add_representer(str, yaml_str_representer)
 def read_toml(path: str) -> dict:
     with open(path, "rb") as file:
         return tomllib.load(file)
-
-
-def now_tz() -> datetime.datetime:
-    return datetime.datetime.now().astimezone()
-
-
-def date_to_str(date: datetime.date | datetime.datetime) -> str:
-    return date.strftime("%Y-%m-%d")
-
-
-def parse_iso_date(string: str) -> datetime.date:
-    if len(string) == 7:
-        string = string + "-01"
-    return datetime.datetime.strptime(string, "%Y-%m-%d").date()
-
-
-def parse_iso_datetime(string: str) -> datetime.datetime:
-    if len(string) == 7:
-        string = string + "-01"
-    return dateutil.parser.isoparse(string).astimezone()
 
 
 def deep_dict_equal(a: dict, b: dict) -> bool:

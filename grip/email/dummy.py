@@ -4,7 +4,7 @@ import tempfile
 
 from email_validator import validate_email
 
-from .. import now_tz
+from ..time import now_tz
 from .common import EmailSender
 
 

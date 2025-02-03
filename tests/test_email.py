@@ -1,7 +1,6 @@
-from pydantic_core.core_schema import datetime_schema
 import pytest
 
-from grip import now_tz, read_toml
+from grip import read_toml
 from grip.email.config import IMAPConfig, SMTPConfig
 from grip.email.dummy import (
     DummyEmailSender,
@@ -9,6 +8,7 @@ from grip.email.dummy import (
 )
 from grip.email.imap import IMAPMailBox
 from grip.email.smtp import SMTPEmailSender
+from grip.time import now_tz
 
 
 @pytest.fixture
