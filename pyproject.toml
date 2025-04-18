@@ -33,3 +33,6 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest", "black", "mypy"]
+
+[tool.setuptools.package-data]
+"*" = ["py.typed"]
