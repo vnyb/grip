@@ -21,7 +21,9 @@ def remove_suffix(string: str, suffix: str) -> str:
     return string
 
 
-def die(message: str) -> NoReturn:
+def die(message: str, *, logger: logging.Logger | None = None) -> NoReturn:
+    if logger is None:
+        logger = logging.getLogger()
     logging.error(message)
     sys.exit(1)
 
