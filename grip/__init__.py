@@ -1,6 +1,6 @@
 import datetime
-import io
 import dateutil.parser
+import io
 import json
 import logging
 import os
@@ -8,8 +8,9 @@ import sys
 import tomllib
 import yaml
 
-from typing import Callable, NoReturn, Tuple, TypeVar
+from functools import lru_cache
 from slugify import slugify
+from typing import Callable, NoReturn, Tuple, TypeVar
 
 T = TypeVar("T")
 R = TypeVar("R")
@@ -30,6 +31,30 @@ def die(message: str, *, logger: logging.Logger | None = None) -> NoReturn:
 
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
+
+
+BOOL_STRING_FALSE = {"0", "false", "n", "no", "non"}
+BOOL_STRING_TRUE = {"1", "true", "y", "yes", "o", "oui"}
+
+
+@lru_cache
+def string_to_bool(string: str | None, default: bool | None = None) -> bool:
+    """
+    Convert string to boolean
+    """
+
+    if string is not None:
+        string = string.strip().lower()
+
+        if string in BOOL_STRING_FALSE:
+            return False
+        if string in BOOL_STRING_TRUE:
+            return True
+
+    if default is None:
+        raise ValueError("Cannot convert string to boolean")
+
+    return default
 
 
 def require_env(name: str) -> str:
