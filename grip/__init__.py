@@ -66,9 +66,11 @@ def read_file(path: str, mode="r") -> str:
         return file.read()
 
 
-def write_file(data, path: str):
-    with open(path, "w") as file:
-        return file.write(data)
+def write_file(data: str | bytes, path: str):
+    mode = "w" if isinstance(data, str) else "wb"
+
+    with open(path, mode) as file:
+        file.write(data)
 
 
 def read_last_line(fp: io.BufferedReader, ignore_empty_lines=False) -> str | None:
