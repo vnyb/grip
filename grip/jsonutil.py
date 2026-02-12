@@ -1,17 +1,16 @@
 """
-Strongly-typed wrappers around json.load() and json.loads().
+Strongly-typed wrappers around the json standard library.
 
 Replaces the default Any return type with a recursive JSONValue type
 that accurately represents the JSON data model.
 """
 
 import json
-
+import pathlib
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Annotated, Any
+from typing import Annotated, Any
 
-if TYPE_CHECKING:
-    from _typeshed import SupportsRead
+from _typeshed import SupportsRead
 
 type JSONValue = str | int | float | bool | None | JSONObject | JSONArray
 type JSONObject = dict[str, JSONValue]
@@ -110,3 +109,38 @@ def json_loads(
         object_pairs_hook=object_pairs_hook,
         **kwds,
     )
+
+
+def read_json(
+    path: Annotated[
+        pathlib.Path | str,
+        "Path to the JSON file to read.",
+    ],
+) -> JSONValue:
+    """
+    Read and deserialize a JSON file.
+    """
+    with open(path, encoding="utf-8") as file:
+        return json.load(file)  # pyright: ignore[reportAny]
+
+
+def write_json(
+    data: Annotated[
+        JSONValue,
+        "JSON-serializable data to write.",
+    ],
+    path: Annotated[
+        pathlib.Path | str,
+        "Path to the JSON file to write.",
+    ],
+    *,
+    indent: Annotated[
+        int | None,
+        "Number of spaces for indentation. None for compact output.",
+    ] = 2,
+) -> None:
+    """
+    Serialize data and write it to a JSON file.
+    """
+    with open(path, "w", encoding="utf-8") as file:
+        json.dump(data, file, indent=indent)

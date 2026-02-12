@@ -1,11 +1,9 @@
 import datetime
 import io
-import json
 import logging
 import os
 import sys
 import tomllib
-import yaml
 
 from functools import lru_cache
 from typing import Callable, NoReturn, Tuple, TypeVar
@@ -127,35 +125,6 @@ def read_last_line(fp: io.BufferedReader, ignore_empty_lines=False) -> str | Non
 
     fp.seek(start)
     return fp.read(n).decode()
-
-
-def read_json(path: str):
-    with open(path, "r") as file:
-        return json.load(file)
-
-
-def write_json(data, path: str, indent=True):
-    with open(path, "w") as file:
-        json.dump(data, file, indent=indent)
-
-
-def read_yaml(path: str):
-    with open(path, "r", encoding="utf-8") as file:
-        return yaml.safe_load(file)
-
-
-def save_yaml(data, path: str):
-    with open(path, "w", encoding="utf-8") as file:
-        yaml.dump(data, file, allow_unicode=True, sort_keys=False)
-
-
-def yaml_str_representer(dumper, data):
-    if "\n" in data:  # Si la chaîne contient plusieurs lignes
-        return dumper.represent_scalar("tag:yaml.org,2002:str", data, style="|")
-    return dumper.represent_scalar("tag:yaml.org,2002:str", data)
-
-
-yaml.add_representer(str, yaml_str_representer)
 
 
 def read_toml(path: str) -> dict:
