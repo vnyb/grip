@@ -19,21 +19,53 @@ classifiers = [
 ]
 
 dependencies = [
-  "email-validator",
-  "imap-tools",
-  "pycountry",
-  "pydantic",
-  "python-dateutil",
-  "python-slugify",
-  "pytimeparse",
-  "pyyaml",
+    "email-validator>=2.3.0",
+    "imap-tools>=1.11.1",
+    "pycountry>=24.6.1",
+    "pydantic>=2.12.5",
+    "python-dateutil>=2.9.0.post0",
+    "python-slugify>=8.0.4",
+    "pytimeparse>=1.1.8",
+    "pyyaml>=6.0.3",
 ]
 
 [project.scripts]
 
 
-[project.optional-dependencies]
-dev = ["pytest", "black", "mypy", "ipython"]
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+  "F",     # pyflakes
+  "E",     # pycodestyle errors
+  "W",     # pycodestyle warnings
+  "I",     # isort
+  "N",     # pep8-naming
+  "UP",    # pyupgrade
+  "B",     # flake8-bugbear
+  "SIM",   # flake8-simplify
+  "TCH",   # flake8-type-checking
+  "RUF",   # ruff-specific rules
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["grip"]
+
+[tool.basedpyright]
+pythonVersion = "3.12"
+typeCheckingMode = "standard"
+
+[dependency-groups]
+dev = [
+    "basedpyright>=1.38.0",
+    "ipython>=9.10.0",
+    "pytest>=9.0.2",
+    "ruff>=0.15.0",
+    "uv>=0.10.2",
+]
+
 
 [tool.setuptools.package-data]
 "*" = ["py.typed"]
