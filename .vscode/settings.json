@@ -1,0 +1,60 @@
+{
+  // Python Configuration
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+
+  // Basedpyright Configuration
+  "python.languageServer": "None",
+  "basedpyright.disableLanguageServices": false,
+  "basedpyright.disableOrganizeImports": false,
+
+  // Ruff Configuration
+  "ruff.enable": true,
+  "ruff.importStrategy": "fromEnvironment",
+  "ruff.configurationPreference": "filesystemFirst",
+
+  // Auto-formatting with Ruff
+  "[python]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.ruff": "explicit",
+      "source.organizeImports.ruff": "explicit"
+    }
+  },
+
+  // Editor Configuration
+  "editor.rulers": [100],
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true,
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+
+  // Files to exclude from search/watch
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    "**/*.pyo": true,
+    "**/.pytest_cache": true,
+    "**/.ruff_cache": true,
+    "**/htmlcov": true,
+    "**/.coverage": true
+  },
+
+  "files.watcherExclude": {
+    "**/__pycache__": true,
+    "**/.venv": true,
+    "**/venv": true,
+    "**/.pytest_cache": true,
+    "**/.ruff_cache": true
+  },
+
+  // Testing with Pytest
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestArgs": [
+    "tests"
+  ],
+
+  // TOML validation
+  "evenBetterToml.schema.enabled": false
+}
