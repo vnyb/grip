@@ -2,46 +2,56 @@ import datetime
 import io
 import logging
 import os
+import pathlib
 import sys
 import tomllib
-
+from collections.abc import Callable, Sequence
 from functools import lru_cache
-from typing import Callable, NoReturn, Tuple, TypeVar
+from typing import Any, NoReturn
+
 from pydantic_core import core_schema
 from slugify import slugify
-from typing import Callable, NoReturn, Tuple, TypeVar
 
-T = TypeVar("T")
-R = TypeVar("R")
+BOOL_STRING_FALSE = {"0", "false", "n", "no", "non"}
+BOOL_STRING_TRUE = {"1", "true", "y", "yes", "o", "oui"}
 
 
 def remove_suffix(string: str, suffix: str) -> str:
+    """
+    Remove the given suffix from a string if it ends with it.
+    """
     if string.endswith(suffix):
         return string[: -len(suffix)]
     return string
 
 
 def die(message: str, *, logger: logging.Logger | None = None) -> NoReturn:
+    """
+    Log an error message and exit the process.
+    """
     if logger is None:
         logger = logging.getLogger()
     logging.error(message)
     sys.exit(1)
 
 
-def eprint(*args, **kwargs):
-    print(*args, file=sys.stderr, **kwargs)
-
-
-BOOL_STRING_FALSE = {"0", "false", "n", "no", "non"}
-BOOL_STRING_TRUE = {"1", "true", "y", "yes", "o", "oui"}
+def eprint(
+    *args: object,
+    sep: str | None = " ",
+    end: str | None = "\n",
+    flush: bool = False,
+) -> None:
+    """
+    Print to stderr.
+    """
+    print(*args, file=sys.stderr, sep=sep, end=end, flush=flush)
 
 
 @lru_cache
 def string_to_bool(string: str | None, default: bool | None = None) -> bool:
     """
-    Convert string to boolean
+    Convert a string to a boolean value.
     """
-
     if string is not None:
         string = string.strip().lower()
 
@@ -57,6 +67,9 @@ def string_to_bool(string: str | None, default: bool | None = None) -> bool:
 
 
 def require_env(name: str) -> str:
+    """
+    Return the value of an environment variable or die if it is not set.
+    """
     try:
         return os.environ[name]
     except KeyError:
@@ -64,44 +77,74 @@ def require_env(name: str) -> str:
 
 
 def is_valid_slug(slug: str) -> bool:
+    """
+    Check whether a string is a valid URL slug.
+    """
     return slugify(slug) == slug
 
 
 def check_slug(slug: str) -> str:
+    """
+    Validate a slug and return it, or raise ValueError.
+    """
     if not is_valid_slug(slug):
         raise ValueError("invalid slug")
     return slug
 
 
-def get_file_age(path: str) -> datetime.timedelta:
-    timestamp = os.path.getctime(path)
-    creation_date = datetime.datetime.fromtimestamp(timestamp)
-    return datetime.datetime.now() - creation_date
+def get_file_age(path: pathlib.Path) -> datetime.timedelta:
+    """
+    Return the time elapsed since the file was created.
+    """
+    stat = path.stat()
+    creation_date = datetime.datetime.fromtimestamp(
+        stat.st_ctime,
+        tz=datetime.UTC,
+    )
+    return datetime.datetime.now(tz=datetime.UTC) - creation_date
 
 
-def get_file_staleness(path: str) -> datetime.timedelta:
-    timestamp = os.path.getmtime(path)
-    last_modified_date = datetime.datetime.fromtimestamp(timestamp)
-    return datetime.datetime.now() - last_modified_date
+def get_file_staleness(path: pathlib.Path) -> datetime.timedelta:
+    """
+    Return the time elapsed since the file was last modified.
+    """
+    stat = path.stat()
+    last_modified_date = datetime.datetime.fromtimestamp(
+        stat.st_mtime,
+        tz=datetime.UTC,
+    )
+    return datetime.datetime.now(tz=datetime.UTC) - last_modified_date
 
 
-def read_file(path: str, mode="r") -> str:
+def read_file(path: pathlib.Path, mode: str = "r") -> str:
+    """
+    Read and return the entire contents of a file.
+    """
     with open(path, mode) as file:
         return file.read()
 
 
-def write_file(data: str | bytes, path: str):
+def write_file(data: str | bytes, path: pathlib.Path) -> None:
+    """
+    Write data to a file.
+    """
     mode = "w" if isinstance(data, str) else "wb"
 
     with open(path, mode) as file:
         file.write(data)
 
 
-def read_last_line(fp: io.BufferedReader, ignore_empty_lines=False) -> str | None:
+def read_last_line(
+    fp: io.BufferedReader,
+    ignore_empty_lines: bool = False,
+) -> str | None:
+    """
+    Read the last line of a binary buffered file.
+    """
     fp.seek(0, 2)  # Move to the end of the file
     pos = start = end = fp.tell()
 
-    def read() -> bytes | None:
+    def _read() -> bytes | None:
         nonlocal pos
 
         pos -= 1
@@ -109,7 +152,7 @@ def read_last_line(fp: io.BufferedReader, ignore_empty_lines=False) -> str | Non
         return fp.read(1)
 
     while pos > 0:
-        char = read()
+        char = _read()
 
         if char == b"\n":
             if end - start == 0 and ignore_empty_lines:
@@ -127,91 +170,122 @@ def read_last_line(fp: io.BufferedReader, ignore_empty_lines=False) -> str | Non
     return fp.read(n).decode()
 
 
-def read_toml(path: str) -> dict:
+def read_toml(path: pathlib.Path) -> dict[str, Any]:
+    """
+    Read and parse a TOML file.
+
+    Returns dict[str, Any] because TOML values are heterogeneous.
+    """
     with open(path, "rb") as file:
         return tomllib.load(file)
 
 
-def deep_dict_equal(a: dict, b: dict) -> bool:
-    for key in a.keys():
+def deep_dict_equal(
+    a: dict[str, object],
+    b: dict[str, object],
+) -> bool:
+    """
+    Recursively compare two dictionaries for equality.
+    """
+    for key in a:
         if key not in b:
             return False
-        if isinstance(a[key], dict) and isinstance(b[key], dict):
-            if not deep_dict_equal(a[key], b[key]):
-                return False
-        if a[key] != b[key]:
+        val_a = a[key]
+        val_b = b[key]
+        if (
+            isinstance(val_a, dict)
+            and isinstance(val_b, dict)
+            and not deep_dict_equal(val_a, val_b)
+        ):
+            return False
+        if val_a != val_b:
             return False
 
-    for key in b.keys():
-        if key not in a:
-            return False
-
-    return True
+    return all(key in a for key in b)
 
 
-def all_equal(values) -> bool:
+def all_equal(values: Sequence[object]) -> bool:
+    """
+    Check whether all elements in a non-empty sequence are equal.
+    """
     assert len(values) > 0
     value = values[0]
 
-    for i in values:
-        if i != value:
-            return False
-    return True
+    return all(i == value for i in values)
 
 
-def apply_or_none(func: Callable[[T], R], value: T | None) -> R | None:
+def apply_or_none[T, R](func: Callable[[T], R], value: T | None) -> R | None:
+    """
+    Apply a function to a value, or return None if the value is None.
+    """
     return None if value is None else func(value)
 
 
 class TCPAddress:
-    def __init__(self, host: str, port: int | None = None):
+    """
+    A TCP address consisting of a host and a port.
+
+    Supports IPv4, IPv6 (bracketed notation), and Pydantic validation.
+    """
+
+    def __init__(self, host: str, port: int | None = None) -> None:
         self.host, self.port = self.parse(host, port)
 
-    def __str__(self):
+    def __str__(self) -> str:
         if ":" in self.host:
             return f"[{self.host}]:{self.port}"
         return f"{self.host}:{self.port}"
 
     @classmethod
-    def parse(cls, addr: str, port: int | None = None) -> Tuple[str, int]:
-        def default():
+    def parse(cls, addr: str, port: int | None = None) -> tuple[str, int]:
+        """
+        Parse a string address into a (host, port) tuple.
+        """
+
+        def _default() -> int:
             if port is None:
                 raise ValueError("No port specified")
             return port
 
         segments = addr.split(":")
         if len(segments) == 1:
-            # TODO check IPv4 format
-            return addr, default()
+            # Plain hostname or IPv4 without port (e.g. "127.0.0.1")
+            return addr, _default()
 
         if len(segments) == 2:
-            # TODO check IPv4 format
+            # IPv4 with port (e.g. "127.0.0.1:8080")
             return segments[0], int(segments[1])
 
-        # TODO check IPv6 format
+        # IPv6 address — must use bracketed notation for port disambiguation
         if not addr.startswith("["):
-            return addr, default()
+            return addr, _default()
         if addr.endswith("]"):
-            return addr[1:-1], default()
+            return addr[1:-1], _default()
         if not segments[-2].endswith("]"):
             raise ValueError("Invalid host")
         host, _port = addr.rsplit(":", 1)
         return host[1:-1], cls.validate_port(_port)
 
     @staticmethod
-    def validate_port(value) -> int:
+    def validate_port(value: str | int) -> int:
+        """
+        Validate and return a port number in the range [0, 65535].
+        """
         try:
-            port = int(value)
+            result = int(value)
         except ValueError as exc:
             raise ValueError("Port must be an integer") from exc
 
-        if not (0 <= port <= 65535):
+        if not (0 <= result <= 65535):
             raise ValueError("Port must be in [0-65535]")
 
-        return port
+        return result
 
     @classmethod
-    def validate(cls, value):
+    def validate(cls, value: str | dict[str, Any]) -> "TCPAddress":
+        """
+        Validate a raw value (str or dict) into a TCPAddress instance.
+        """
         if isinstance(value, dict):
             host = value.get("host")
             if host is None:
@@ -226,8 +300,14 @@ class TCPAddress:
             host, port = cls.parse(value)
             return cls(host, port)
 
+        raise TypeError(f"Cannot validate {type(value)} as TCPAddress")
+
     @classmethod
-    def __get_pydantic_core_schema__(cls, source, handler):
+    def __get_pydantic_core_schema__(
+        cls,
+        source: type,
+        handler: Callable[..., core_schema.CoreSchema],
+    ) -> core_schema.CoreSchema:
         """
         Define the Pydantic core schema for validation.
         """

@@ -7,18 +7,16 @@
   "basedpyright.disableLanguageServices": false,
   "basedpyright.disableOrganizeImports": false,
 
-  // Ruff Configuration
-  "ruff.enable": true,
+  // Ruff Extension (config in pyproject.toml)
   "ruff.importStrategy": "fromEnvironment",
-  "ruff.configurationPreference": "filesystemFirst",
 
   // Auto-formatting with Ruff
   "[python]": {
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.codeActionsOnSave": {
-      "source.fixAll.ruff": "explicit",
-      "source.organizeImports.ruff": "explicit"
+      "source.fixAll.ruff": "always",
+      "source.organizeImports.ruff": "always"
     }
   },
 
