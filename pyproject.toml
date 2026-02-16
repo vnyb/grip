@@ -19,6 +19,7 @@ classifiers = [
 ]
 
 dependencies = [
+    "argon2-cffi>=25.1.0",
     "email-validator>=2.3.0",
     "imap-tools>=1.11.1",
     "pycountry>=24.6.1",
@@ -27,6 +28,7 @@ dependencies = [
     "python-slugify>=8.0.4",
     "pytimeparse>=1.1.8",
     "pyyaml>=6.0.3",
+    "zxcvbn>=4.5.0",
 ]
 
 [project.scripts]
