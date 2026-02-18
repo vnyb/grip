@@ -10,7 +10,6 @@ from functools import lru_cache
 from typing import Any, NoReturn
 
 from pydantic_core import core_schema
-from slugify import slugify
 
 BOOL_STRING_FALSE = {"0", "false", "n", "no", "non"}
 BOOL_STRING_TRUE = {"1", "true", "y", "yes", "o", "oui"}
@@ -74,22 +73,6 @@ def require_env(name: str) -> str:
         return os.environ[name]
     except KeyError:
         die(f"environment variable '{name}' is not set")
-
-
-def is_valid_slug(slug: str) -> bool:
-    """
-    Check whether a string is a valid URL slug.
-    """
-    return slugify(slug) == slug
-
-
-def check_slug(slug: str) -> str:
-    """
-    Validate a slug and return it, or raise ValueError.
-    """
-    if not is_valid_slug(slug):
-        raise ValueError("invalid slug")
-    return slug
 
 
 def get_file_age(path: pathlib.Path) -> datetime.timedelta:
