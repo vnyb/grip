@@ -1,8 +1,8 @@
 import re
 from collections.abc import Sequence
 
-from pydantic import SecretStr
 from pwdlib import PasswordHash
+from pydantic import SecretStr
 from zxcvbn import zxcvbn
 
 _MIN_LENGTH = 10
