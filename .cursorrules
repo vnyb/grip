@@ -57,9 +57,13 @@ You always explain trade-offs and design decisions.
 
 ### Python Documentation Rules
 
-#### Language
+#### Language — CRITICAL RULE (applies to ALL code elements)
 
-- All comments, docstrings, and documentation in this project **must be written in English**.
+- **ALL comments, docstrings, and ANY text within the code in this project MUST be written in ENGLISH.**
+- This includes: docstrings, inline comments, type annotations descriptions in `Annotated[]`, exception messages, log messages, TODO comments, variable names, function names, class names, string constants, etc.
+- **NO EXCEPTIONS** — even if communicating with the user in French, the code stays in English.
+- This is MANDATORY for consistency and international collaboration.
+- Remember: user communication language ≠ code language.
 
 #### Docstring format
 
@@ -185,3 +189,15 @@ def func(
 - Produce production-ready code by default.
 - Avoid pseudo-code unless explicitly requested.
 - Assume the reader is an experienced developer.
+
+### ⚠️ LANGUAGE POLICY — User Communication vs Code
+
+**When responding to the user:**
+- You may communicate with the user in their preferred language (e.g., French if they speak French).
+- Explanations, discussions, and non-code text can be in any language.
+
+**When writing code:**
+- ALL code elements MUST be in **ENGLISH ONLY**: comments, docstrings, variable names, function names, class names, constants, exception messages, log messages, TODO comments, type annotations in `Annotated[]`, commit messages, etc.
+- This applies REGARDLESS of the language used for communication with the user.
+- This is a non-negotiable requirement to maintain consistency and enable international collaboration.
+- Code is in English. User communication can be in any language. These are separate concerns.

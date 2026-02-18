@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+---
+
 ## Project Overview
 
 GRIP (General Resources & Implementations for Python) is a Python 3.12 utility library providing typed helpers for configuration management, email (SMTP/IMAP), JSON/YAML, time/datetime, caching, logging, and more. Built on Pydantic v2 with strict validation throughout.
@@ -41,9 +43,17 @@ uv run basedpyright
 
 ## Coding Conventions
 
+### ⚠️ CODE LANGUAGE POLICY
+
+**ALL code elements in this project MUST be in ENGLISH:**
+- Comments, docstrings, variable names, function names, class names, exception messages, log messages, TODO comments, type annotations in `Annotated[]`, commit messages, etc.
+- This applies even if you communicate with the user in French or any other language.
+- Code language (English) and user communication language (any) are separate concerns.
+
 ### Python
 
 - **Python 3.12** syntax, PEP 8 and modern idioms.
+- **REMINDER: ALL code (comments, docstrings, names, etc.) must be in ENGLISH, regardless of communication language with the user.**
 - Use `pathlib` not `os.path`, f-strings exclusively.
 - **`import datetime`** as module, then `datetime.datetime`, `datetime.date`, etc. Use timezone-aware timestamps (`datetime.datetime.now().astimezone()`).
 - Keep functions small and focused. Raise explicit, meaningful exceptions.
@@ -63,6 +73,7 @@ uv run basedpyright
 
 ### Docstrings
 
+- **CODE LANGUAGE: Write ALL docstrings, comments, and text in code in ENGLISH ONLY (even if user speaks French).**
 - Always multi-line with description on a separate line. **Never** inline `"""..."""`.
 - Document arguments via `Annotated[]` with trailing commas — **never** use `Args:` sections.
 
