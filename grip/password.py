@@ -1,8 +1,8 @@
 import re
-from collections.abc import Iterable
+from collections.abc import Sequence
 
-import argon2
 from pydantic import SecretStr
+from pwdlib import PasswordHash
 from zxcvbn import zxcvbn
 
 _MIN_LENGTH = 10
@@ -12,7 +12,13 @@ _MIN_ZXCVBN_SCORE = 3
 
 _CONSECUTIVE_RE = re.compile(r"(.)\1{2,}")
 
-_hasher = argon2.PasswordHasher()
+_pwd_hash = PasswordHash.recommended()
+
+
+class PasswordHashStr(str):
+    """
+    A strongly-typed password hash.
+    """
 
 
 class WeakPasswordError(ValueError):
@@ -20,7 +26,7 @@ class WeakPasswordError(ValueError):
     Raised when a password fails strength validation.
     """
 
-    def __init__(self, reasons: Iterable[str]) -> None:
+    def __init__(self, reasons: Sequence[str]) -> None:
         self.reasons = reasons
         super().__init__(f"weak password: {'; '.join(reasons)}")
 
@@ -60,28 +66,27 @@ def _has_consecutive_identical(password: str) -> bool:
     return _CONSECUTIVE_RE.search(password) is not None
 
 
-def password_hash(password: SecretStr | str) -> str:
+def password_hash(password: SecretStr | str) -> PasswordHashStr:
     """
     Hash a password using Argon2id.
     """
-    return _hasher.hash(
-        password.get_secret_value() if isinstance(password, SecretStr) else password
+    return PasswordHashStr(
+        _pwd_hash.hash(
+            password.get_secret_value() if isinstance(password, SecretStr) else password,
+        )
     )
 
 
-def password_verify(password: SecretStr | str, hash: str) -> bool:
+def password_verify(password: SecretStr | str, hash: PasswordHashStr) -> bool:
     """
     Verify a password against an Argon2id hash.
 
     Returns False on mismatch; lets InvalidHashError propagate.
     """
-    try:
-        return _hasher.verify(
-            hash,
-            password.get_secret_value() if isinstance(password, SecretStr) else password,
-        )
-    except argon2.exceptions.VerifyMismatchError:
-        return False
+    return _pwd_hash.verify(
+        password.get_secret_value() if isinstance(password, SecretStr) else password,
+        hash,
+    )
 
 
 def password_check_strength(password: SecretStr | str) -> None:
