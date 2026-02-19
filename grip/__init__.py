@@ -3,6 +3,8 @@ import io
 import logging
 import os
 import pathlib
+import secrets
+import string
 import sys
 import tomllib
 from collections.abc import Callable, Sequence
@@ -10,6 +12,9 @@ from functools import lru_cache
 from typing import Any, NoReturn
 
 from pydantic_core import core_schema
+
+ALNUM_LOWERCASE_CHARS = string.ascii_lowercase + string.digits
+ALNUM_CHARS = string.ascii_letters + string.digits
 
 BOOL_STRING_FALSE = {"0", "false", "n", "no", "non"}
 BOOL_STRING_TRUE = {"1", "true", "y", "yes", "o", "oui"}
@@ -202,6 +207,20 @@ def apply_or_none[T, R](func: Callable[[T], R], value: T | None) -> R | None:
     Apply a function to a value, or return None if the value is None.
     """
     return None if value is None else func(value)
+
+
+def generate_random_lower_alnum(length=16) -> str:
+    """
+    Generate a secure random lowercase alphanumeric string.
+    """
+    return "".join(secrets.choice(ALNUM_LOWERCASE_CHARS) for _ in range(length))
+
+
+def generate_random_alnum(length=16) -> str:
+    """
+    Generate a secure random alphanumeric string.
+    """
+    return "".join(secrets.choice(ALNUM_CHARS) for _ in range(length))
 
 
 class TCPAddress(str):
