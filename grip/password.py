@@ -1,5 +1,8 @@
 import re
+import secrets
+import string
 from collections.abc import Sequence
+from typing import Annotated
 
 from pwdlib import PasswordHash
 from pydantic import SecretStr
@@ -132,3 +135,54 @@ def password_check_strength(password: SecretStr | str) -> None:
 
     if reasons:
         raise WeakPasswordError(reasons)
+
+
+_LOWERCASE = string.ascii_lowercase
+_UPPERCASE = string.ascii_uppercase
+_DIGITS = string.digits
+_SPECIAL = string.punctuation
+
+
+def password_generate(
+    length: Annotated[
+        int,
+        "Desired password length",
+    ] = 16,
+    check_strength: Annotated[
+        bool,
+        "Whether to check the password strength",
+    ] = False,
+) -> str:
+    """
+    Generate a cryptographically secure random password
+    """
+
+    if check_strength:
+        if length < _MIN_LENGTH:
+            raise ValueError(f"length must be at least {_MIN_LENGTH}, got {length}")
+        if length > _MAX_LENGTH:
+            raise ValueError(f"length must be at most {_MAX_LENGTH}, got {length}")
+
+    alphabet = _LOWERCASE + _UPPERCASE + _DIGITS + _SPECIAL
+
+    while True:
+        mandatory = [
+            secrets.choice(_LOWERCASE),
+            secrets.choice(_UPPERCASE),
+            secrets.choice(_DIGITS),
+            secrets.choice(_SPECIAL),
+        ]
+        remaining = [secrets.choice(alphabet) for _ in range(length - len(mandatory))]
+        chars = mandatory + remaining
+        secrets.SystemRandom().shuffle(chars)
+        candidate = "".join(chars)
+
+        if not check_strength:
+            return candidate
+
+        try:
+            password_check_strength(candidate)
+        except WeakPasswordError:
+            continue
+
+        return candidate
