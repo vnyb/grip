@@ -209,20 +209,6 @@ def apply_or_none[T, R](func: Callable[[T], R], value: T | None) -> R | None:
     return None if value is None else func(value)
 
 
-def generate_random_lower_alnum(length=16) -> str:
-    """
-    Generate a secure random lowercase alphanumeric string.
-    """
-    return "".join(secrets.choice(ALNUM_LOWERCASE_CHARS) for _ in range(length))
-
-
-def generate_random_alnum(length=16) -> str:
-    """
-    Generate a secure random alphanumeric string.
-    """
-    return "".join(secrets.choice(ALNUM_CHARS) for _ in range(length))
-
-
 class TCPAddress(str):
     """
     A TCP address consisting of a host and a port.
