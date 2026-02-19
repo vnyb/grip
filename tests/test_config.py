@@ -222,3 +222,28 @@ def test_singleton() -> None:
     assert result.first.baz is True
     assert result.second.integer == 42
     assert result.second.string == "hello"
+
+
+def test_unknown_field_attribute_error() -> None:
+    """
+    Accessing an unknown field must raise AttributeError.
+    """
+    config = DummyConfig(
+        first=FirstConfig(
+            foo=42,
+            bar="test",
+            first_secret=Secret("hello"),
+        ),
+        second=SecondConfig(
+            integer=42,
+            string="hello",
+            second_secret=Secret("hello"),
+        ),
+    )
+
+    # Test accessing a non-existent field
+    with pytest.raises(AttributeError, match="'DummyConfig' object has no attribute"):
+        _ = config.unknown_field  # type: ignore
+
+    with pytest.raises(AttributeError, match="'FirstConfig' object has no attribute"):
+        _ = config.first.nonexistent  # type: ignore

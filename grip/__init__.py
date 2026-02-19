@@ -204,20 +204,31 @@ def apply_or_none[T, R](func: Callable[[T], R], value: T | None) -> R | None:
     return None if value is None else func(value)
 
 
-class TCPAddress:
+class TCPAddress(str):
     """
     A TCP address consisting of a host and a port.
 
     Supports IPv4, IPv6 (bracketed notation), and Pydantic validation.
+    Inherits from str, allowing direct string usage.
     """
 
-    def __init__(self, host: str, port: int | None = None) -> None:
-        self.host, self.port = self.parse(host, port)
+    host: str
+    port: int
 
-    def __str__(self) -> str:
-        if ":" in self.host:
-            return f"[{self.host}]:{self.port}"
-        return f"{self.host}:{self.port}"
+    def __new__(cls, host: str, port: int | None = None) -> "TCPAddress":
+        parsed_host, parsed_port = cls.parse(host, port)
+
+        # Format the string representation
+        if ":" in parsed_host:
+            addr_str = f"[{parsed_host}]:{parsed_port}"
+        else:
+            addr_str = f"{parsed_host}:{parsed_port}"
+
+        # Create the string instance
+        instance = str.__new__(cls, addr_str)
+        instance.host = parsed_host
+        instance.port = parsed_port
+        return instance
 
     @classmethod
     def parse(cls, addr: str, port: int | None = None) -> tuple[str, int]:

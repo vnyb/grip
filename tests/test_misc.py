@@ -66,3 +66,24 @@ def test_parse_tcp_addr():
         )
         == "[2001:db8::8a2e:370:7334]:443"
     )
+
+
+def test_tcp_addr_as_str():
+    # TCPAddress should be usable as a string since it inherits from str
+    addr = TCPAddress("host", 443)
+    assert addr == "host:443"
+    assert isinstance(addr, str)
+    assert addr.startswith("host")
+    assert addr.endswith("443")
+
+    # IPv6 address
+    addr_ipv6 = TCPAddress("2001:db8::8a2e:370:7334", 443)
+    assert addr_ipv6 == "[2001:db8::8a2e:370:7334]:443"
+    assert isinstance(addr_ipv6, str)
+    assert addr_ipv6.startswith("[2001")
+
+    # Access host and port attributes
+    assert addr.host == "host"
+    assert addr.port == 443
+    assert addr_ipv6.host == "2001:db8::8a2e:370:7334"
+    assert addr_ipv6.port == 443
