@@ -21,6 +21,7 @@ classifiers = [
 dependencies = [
   "aiosmtplib>=5.1.0",
   "email-validator>=2.3.0",
+  "httpx>=0.28.1",
   "imap-tools>=1.11.1",
   "pwdlib[argon2]>=0.3.0",
   "pycountry>=24.6.1",

@@ -3,7 +3,6 @@ import io
 import logging
 import os
 import pathlib
-import secrets
 import string
 import sys
 import tomllib
