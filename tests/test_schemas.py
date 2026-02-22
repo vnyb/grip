@@ -35,33 +35,30 @@ def test_omissible():
 
     # JSON schema verification
     schema = _DummySchema.model_json_schema()
-    
+
     # Required fields: required and nullable only
     assert set(schema["required"]) == {"required", "nullable"}
-    
+
     # required: non-nullable string, no default
     assert schema["properties"]["required"] == {"title": "Required", "type": "string"}
-    
+
     # nullable: string or null, no default
     assert schema["properties"]["nullable"] == {
         "anyOf": [{"type": "string"}, {"type": "null"}],
         "title": "Nullable",
     }
-    
+
     # optional: string or null, with None default
     assert schema["properties"]["optional"] == {
         "anyOf": [{"type": "string"}, {"type": "null"}],
         "default": None,
         "title": "Optional",
     }
-    
+
     # omissible: string only (not null), with None default
     assert schema["properties"]["omissible"] == {
         "default": None,
         "title": "Omissible",
         "type": "string",
     }
-
-    from pprint import pprint
-
-    pprint(_DummySchema.model_json_schema())
+    assert "omissible" not in schema["required"]
