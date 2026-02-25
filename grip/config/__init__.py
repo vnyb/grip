@@ -197,6 +197,22 @@ def _read_json_dict(path: Path) -> dict[str, Any]:
     return data
 
 
+def _field_accepts_secret(model_cls: type[BaseConfig], field_name: str) -> bool:
+    """
+    Check whether a model field's type annotation includes Secret (e.g. Secret | None).
+    """
+    field_info = model_cls.model_fields.get(field_name)
+    if field_info is None:
+        return False
+    annotation = field_info.annotation
+    if annotation is Secret:
+        return True
+    origin = typing.get_origin(annotation)
+    if origin is types.UnionType or origin is typing.Union:
+        return Secret in typing.get_args(annotation)
+    return False
+
+
 def _inject_secrets(
     model: BaseConfig,
     secrets: dict[str, object],
@@ -245,7 +261,7 @@ def _inject_secrets(
             continue
 
         # Leaf: must be a Secret field receiving a str value (old-style without descriptor)
-        if not isinstance(current, Secret):
+        if not isinstance(current, Secret) and not _field_accepts_secret(type(model), key):
             errors.append({"type": "extra_forbidden", "loc": loc, "input": value})
             continue
 
@@ -385,13 +401,13 @@ class ConfigLoader[TBaseConfig: BaseConfig]:
 
         Raises ``exceptions.Error`` for unsupported extensions.
         """
-        suffix = path.suffix.lower()
-        if suffix == ".toml":
+        suffixes = [s.lower() for s in path.suffixes]
+        if ".toml" in suffixes:
             secrets = _read_toml(path)
-        elif suffix == ".json":
+        elif ".json" in suffixes:
             secrets = _read_json_dict(path)
         else:
-            raise exceptions.Error(f"Unsupported secrets file extension '{suffix}'")
+            raise exceptions.Error(f"Unsupported secrets file extension '{path.suffix}'")
         self.load_secrets(secrets)
 
     def set_secret(
