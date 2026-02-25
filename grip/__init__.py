@@ -280,7 +280,7 @@ class TCPAddress(str):
         return result
 
     @classmethod
-    def validate(cls, value: str | dict[str, Any]) -> "TCPAddress":
+    def validate(cls, value: Any) -> "TCPAddress":
         """
         Validate a raw value (str or dict) into a TCPAddress instance.
         """

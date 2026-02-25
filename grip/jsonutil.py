@@ -5,12 +5,14 @@ Replaces the default Any return type with a recursive JSONValue type
 that accurately represents the JSON data model.
 """
 
+from __future__ import annotations
 import json
 import pathlib
 from collections.abc import Callable
-from typing import Annotated, Any
+from typing import Annotated, Any, TYPE_CHECKING
 
-from _typeshed import SupportsRead
+if TYPE_CHECKING:
+    from _typeshed import SupportsRead
 
 type JSONValue = str | int | float | bool | None | JSONObject | JSONArray
 type JSONObject = dict[str, JSONValue]

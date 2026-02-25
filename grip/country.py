@@ -1,25 +1,32 @@
 import gettext
-from typing import List
+from collections.abc import Sequence
+
 import pycountry
 from pycountry.db import Country
 
+
 def get_country(name: str) -> Country | None:
-    country = pycountry.countries.lookup(name)
-    if country is None:
+    try:
+        country = pycountry.countries.lookup(name)
+    except LookupError:
         return None
-    assert isinstance(country, Country)
     return country
 
-def load_translation(language: str | None = None, languages: List[str] = []) -> gettext.GNUTranslations:
-    assert language or languages
+
+def load_translation(
+    *,
+    language: str | None = None,
+    languages: Sequence[str] | None = None,
+) -> gettext.NullTranslations:
+    _languages = list(languages) if languages else []
 
     if language:
-        languages.append(language)
+        _languages.append(language)
 
     translation = gettext.translation(
-        'iso3166-1',
+        "iso3166-1",
         pycountry.LOCALES_DIR,
-        languages=languages,
+        languages=_languages,
         fallback=True,
     )
     translation.install()

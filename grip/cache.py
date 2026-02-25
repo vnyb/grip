@@ -1,22 +1,25 @@
 import datetime
 import os
-import pandas as pd
+from collections.abc import Callable
 from functools import wraps
-from typing import Callable, TypeVar
+from pathlib import Path
+from typing import Any, ClassVar, TypeVar
+
+import pandas as pd
+
 from . import (
     get_file_staleness,
-    read_json,
-    write_json,
 )
+from .jsonutil import JSONObject, read_json, write_json
 from .logging import Loggable
 
 T = TypeVar("T")
 
 
 class SimpleFileCache(Loggable):
-    SUPPORTED_FORMATS = {"json"}
+    SUPPORTED_FORMATS: ClassVar[set[str]] = {"json"}
 
-    def __init__(self, path: str, name: str):
+    def __init__(self, path: Path, name: str):
         self.path = path
         self.format = os.path.splitext(self.path)[1].lower().lstrip(".")
         self.name = name
@@ -42,10 +45,10 @@ class SimpleFileCache(Loggable):
     def check(func: Callable[..., T]) -> Callable[..., T | None]:
         @wraps(func)
         def wrapper(
-            self,
-            *args,
+            self: SimpleFileCache,
+            *args: Any,
             max_age: datetime.timedelta | None = None,
-            **kwargs,
+            **kwargs: Any,
         ) -> T | None:
             if not self.check_validity(max_age=max_age):
                 return None
@@ -54,13 +57,16 @@ class SimpleFileCache(Loggable):
         return wrapper
 
     @check
-    def read_dict(self) -> dict:
+    def read_dict(self) -> JSONObject:
         self.log.info("read")
 
         if self.format == "json":
-            return read_json(self.path)
+            data = read_json(self.path)
+            if isinstance(data, dict):
+                return data
+            raise ValueError(f"Expected a JSON object, got {type(data).__name__}")
 
-        assert False
+        raise ValueError(f"Unknown format: {self.format}")
 
     @check
     def read_series(self) -> pd.Series:
@@ -69,13 +75,13 @@ class SimpleFileCache(Loggable):
         if self.format == "json":
             return pd.read_json(self.path, typ="series")
 
-        assert False
+        raise ValueError(f"Unknown format: {self.format}")
 
     def ensure_directory(self):
         path = os.path.dirname(self.path)
         os.makedirs(path, exist_ok=True)
 
-    def write_json(self, data: dict | pd.Series):
+    def write_json(self, data: JSONObject | pd.Series):
         self.ensure_directory()
 
         if isinstance(data, pd.Series):
@@ -83,10 +89,10 @@ class SimpleFileCache(Loggable):
         else:
             write_json(data, self.path)
 
-    def write(self, data: dict | pd.Series):
+    def write(self, data: JSONObject | pd.Series):
         self.log.info("write")
 
         if self.format == "json":
             self.write_json(data)
         else:
-            assert False
+            raise ValueError(f"Unknown format: {self.format}")

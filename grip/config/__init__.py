@@ -1,5 +1,6 @@
 import json
 import tomllib
+import types
 import typing
 from pathlib import Path
 from typing import Annotated, Any, ClassVar, Self, TypeVar, override
@@ -86,7 +87,7 @@ class SecretDescriptor:
 
         return value
 
-    def __set__(self, obj: object, value: Secret) -> None:
+    def __set__(self, obj: object, value: Any) -> None:
         """
         Set the Secret value.
         """
@@ -117,7 +118,7 @@ class BaseConfig(BaseModel):
 
         This is called by Pydantic AFTER model_fields has been populated.
         """
-        super().__pydantic_init_subclass__(**kwargs)  # type: ignore
+        super().__pydantic_init_subclass__(**kwargs)
 
         # Scan model_fields for Secret types and replace with descriptors
         if not hasattr(cls, "model_fields"):
