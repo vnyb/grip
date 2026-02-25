@@ -1,16 +1,16 @@
 """
-Async SMTP client with TLS/STARTTLS support.
+Async SMTP client with TLS/STARTTLS/plaintext support.
 """
 
 import enum
 import ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from functools import cached_property
+from functools import cached_property, partial
 from typing import Annotated
 
 import aiosmtplib
-from pydantic import EmailStr, Field
+from pydantic import EmailStr, Field, field_validator
 
 from . import TCPAddress
 from .config import BaseConfig, Secret
@@ -21,6 +21,7 @@ class TlsMode(enum.StrEnum):
     TLS mode for SMTP connections.
     """
 
+    NONE = "NONE"
     TLS = "TLS"
     STARTTLS = "STARTTLS"
 
@@ -42,6 +43,7 @@ class SmtpConfig(BaseConfig):
     )
 
     username: str | None = Field(
+        default=None,
         description="SMTP username",
         min_length=1,
     )
@@ -61,7 +63,18 @@ class SmtpConfig(BaseConfig):
         default=TlsMode.STARTTLS,
     )
 
+    @field_validator("tls_mode", mode="before")
+    @classmethod
+    def _coerce_tls_mode(cls, v: object) -> object:
+        """
+        Allow string values from TOML config files in strict mode.
+        """
+        if isinstance(v, str):
+            return TlsMode(v)
+        return v
+
     password: Secret | None = Field(
+        default=None,
         description="SMTP password",
     )
 
@@ -156,27 +169,20 @@ class SmtpClient:
             message.attach(part_html)
 
         try:
-            tls_context = self._get_tls_context()
+            send = partial(
+                aiosmtplib.send,
+                message,
+                hostname=self.config.address.host,
+                port=self.config.address.port,
+                username=self.config.username,
+                password=self.config.get_password(),
+            )
 
-            if self.config.tls_mode == TlsMode.TLS:
-                await aiosmtplib.send(
-                    message,
-                    hostname=self.config.address.host,
-                    port=self.config.address.port,
-                    username=self.config.username,
-                    password=self.config.get_password(),
-                    use_tls=True,
-                    tls_context=tls_context,
-                )
+            if self.config.tls_mode == TlsMode.NONE:
+                await send(use_tls=False, start_tls=False)
+            elif self.config.tls_mode == TlsMode.TLS:
+                await send(use_tls=True, tls_context=self._get_tls_context())
             else:
-                await aiosmtplib.send(
-                    message,
-                    hostname=self.config.address.host,
-                    port=self.config.address.port,
-                    username=self.config.username,
-                    password=self.config.get_password(),
-                    start_tls=True,
-                    tls_context=tls_context,
-                )
+                await send(start_tls=True, tls_context=self._get_tls_context())
         except aiosmtplib.SMTPException as e:
             raise SmtpError(f"Failed to send email to {to}: {e}") from e
