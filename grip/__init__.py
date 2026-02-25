@@ -6,9 +6,11 @@ import pathlib
 import string
 import sys
 import tomllib
+import email_validator
 from collections.abc import Callable, Sequence
 from functools import lru_cache
-from typing import Any, NoReturn
+from typing import Annotated, Any, NoReturn
+from pydantic import EmailStr
 
 from pydantic_core import core_schema
 
@@ -310,3 +312,22 @@ class TCPAddress(str):
         Define the Pydantic core schema for validation.
         """
         return core_schema.no_info_plain_validator_function(cls.validate)
+
+
+def validate_email(
+    value: Annotated[str, "e-mail address to validate"],
+    *,
+    check_deliverability: Annotated[bool, "check if the email address is deliverable"] = False,
+) -> EmailStr:
+    """
+    Validate an email address.
+    """
+    try:
+        email_validator.validate_email(
+            value,
+            allow_smtputf8=False,
+            check_deliverability=check_deliverability,
+        )
+        return value
+    except email_validator.EmailNotValidError as e:
+        raise ValueError(f"Invalid email address: {e}") from e
