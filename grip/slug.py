@@ -42,4 +42,18 @@ class SlugStr(str):
         """
         Define the Pydantic core schema for validation.
         """
-        return core_schema.no_info_plain_validator_function(cls.validate)
+        return core_schema.chain_schema([
+            core_schema.str_schema(),
+            core_schema.no_info_plain_validator_function(cls.validate),
+        ])
+
+    @classmethod
+    def __get_pydantic_json_schema__(
+        cls,
+        schema: core_schema.CoreSchema,
+        handler: Any,
+    ) -> dict[str, Any]:
+        """
+        Define the JSON schema representation as a plain string.
+        """
+        return {"type": "string"}
