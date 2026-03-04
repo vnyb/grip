@@ -3,6 +3,7 @@ HTTP utilities
 """
 
 from functools import cached_property
+from pydantic import BaseModel
 
 import httpx
 
@@ -75,6 +76,9 @@ class WrappedResponse:
         if isinstance(data, dict):
             return data
         raise ValueError(f"Expected a JSON object, got {type(data).__name__}")
+
+    def validate[T: BaseModel](self, schema: type[T]) -> T:
+        return schema.model_validate(self.json_obj)
 
 
 def check_resp(
