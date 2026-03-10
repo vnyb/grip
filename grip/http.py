@@ -3,9 +3,9 @@ HTTP utilities
 """
 
 from functools import cached_property
-from pydantic import BaseModel
 
 import httpx
+from pydantic import BaseModel
 
 from .jsonutil import JSONObject, JSONValue
 
@@ -29,6 +29,8 @@ def get_response_json(resp: httpx.Response) -> JSONValue | None:
     Parse Sanic or httpx JSON data if present in the response, return None otherwise
     """
     if _get_content_type(resp) != "application/json":
+        return None
+    if not resp.content:
         return None
     return resp.json()
 
