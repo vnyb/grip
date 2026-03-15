@@ -6,6 +6,7 @@ import enum
 import ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.utils import formatdate
 from functools import cached_property, partial
 from typing import Annotated
 
@@ -156,6 +157,7 @@ class SmtpClient:
         message["Subject"] = subject
         message["From"] = self._format_from
         message["To"] = to
+        message["Date"] = formatdate(localtime=True)
 
         if not html_content and not text_content:
             text_content = ""
