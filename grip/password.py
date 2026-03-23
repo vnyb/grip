@@ -18,12 +18,6 @@ _CONSECUTIVE_RE = re.compile(r"(.)\1{2,}")
 _pwd_hash = PasswordHash.recommended()
 
 
-class PasswordHashStr(str):
-    """
-    A strongly-typed password hash.
-    """
-
-
 class WeakPasswordError(ValueError):
     """
     Raised when a password fails strength validation.
@@ -69,18 +63,16 @@ def _has_consecutive_identical(password: str) -> bool:
     return _CONSECUTIVE_RE.search(password) is not None
 
 
-def password_hash(password: SecretStr | str) -> PasswordHashStr:
+def password_hash(password: SecretStr | str) -> str:
     """
     Hash a password using Argon2id.
     """
-    return PasswordHashStr(
-        _pwd_hash.hash(
-            password.get_secret_value() if isinstance(password, SecretStr) else password,
-        )
+    return _pwd_hash.hash(
+        password.get_secret_value() if isinstance(password, SecretStr) else password,
     )
 
 
-def password_verify(password: SecretStr | str, hash: PasswordHashStr) -> bool:
+def password_verify(password: SecretStr | str, hash: str) -> bool:
     """
     Verify a password against an Argon2id hash.
 
